@@ -1,3 +1,4 @@
+
 // 전역 변수
 let data = [];
 let previousWinners = [];
@@ -103,48 +104,74 @@ function handleFileUpload() {
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        let jsonData;
-        if (file.name.endsWith('.csv')) {
-            const csv = e.target.result;
-            const workbook = XLSX.read(csv, {type: 'string'});
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
-        } else {
-            const dataBinary = e.target.result;
-            try {
-                const workbook = XLSX.read(dataBinary, {type: 'binary'});
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
-            } catch (error) {
-                fileMessage.innerHTML = `<p class="error">엑셀 파일을 읽는 중 오류가 발생했습니다: ${error.message}</p>`;
-                return;
-            }
+        const dataBinary = e.target.result;
+        let workbook;
+        try {
+            workbook = XLSX.read(dataBinary, {type: 'binary'});
+        } catch (error) {
+            fileMessage.innerHTML = `<p class="error">엑셀 파일을 읽는 중 오류가 발생했습니다: ${error.message}</p>`;
+            return;
         }
-
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
         if (jsonData.length === 0) {
-            fileMessage.innerHTML = '<p class="error">파일이 비어 있습니다.</p>';
+            fileMessage.innerHTML = '<p class="error">엑셀 파일이 비어 있습니다.</p>';
+            return;
+        }
+        // 첫 번째 행을 헤더로 사용
+        headers = jsonData[0].map(header => header.trim());
+        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+        if (nameIndex === -1) {
+            fileMessage.innerHTML = '<p class="error">엑셀 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
             return;
         }
 
-        // 첫 번째 행을 헤더로 사용
-        headers = jsonData[0].map(header => header.trim());
         const rows = jsonData.slice(1).map(row => {
             let obj = {};
             headers.forEach((header, index) => {
                 obj[header] = row[index] ? row[index].toString().trim() : '';
             });
             return obj;
-        }).filter(row => Object.values(row).some(value => value !== ''));
+        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
 
         data = rows;
         renderDataTable(headers, rows);
         fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
     };
-
     if (file.name.endsWith('.csv')) {
         reader.readAsText(file);
+        reader.onload = function(e) {
+            const csv = e.target.result;
+            const workbook = XLSX.read(csv, {type: 'string'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
+            if (jsonData.length === 0) {
+                fileMessage.innerHTML = '<p class="error">CSV 파일이 비어 있습니다.</p>';
+                return;
+            }
+            headers = jsonData[0].map(header => header.trim());
+            const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+            if (nameIndex === -1) {
+                fileMessage.innerHTML = '<p class="error">CSV 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
+                return;
+            }
+
+            const rows = jsonData.slice(1).map(row => {
+                let obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = row[index] ? row[index].toString().trim() : '';
+                });
+                return obj;
+            }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
+
+            data = rows;
+            renderDataTable(headers, rows);
+            fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
+        };
     } else {
         reader.readAsBinaryString(file);
     }
@@ -181,13 +208,20 @@ async function handleGoogleSheet() {
             return;
         }
         headers = jsonData[0].map(header => header.trim());
+        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+        if (nameIndex === -1) {
+            googleSheetMessage.innerHTML = '<p class="error">구글 시트에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
+            return;
+        }
+
         const rows = jsonData.slice(1).map(row => {
             let obj = {};
             headers.forEach((header, index) => {
                 obj[header] = row[index] ? row[index].toString().trim() : '';
             });
             return obj;
-        }).filter(row => Object.values(row).some(value => value !== ''));
+        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
 
         data = rows;
         renderDataTable(headers, rows);
@@ -210,13 +244,13 @@ function handleDirectInput() {
         directInputMessage.innerHTML = '<p class="error">입력된 데이터가 유효하지 않습니다.</p>';
         return;
     }
-    headers = ['참가자']; // 직접 입력은 '참가자'만 사용
-    data = entries.map(entry => ({ "참가자": entry }));
+    headers = ['이름']; // 직접 입력은 '이름'만 사용
+    data = entries.map(name => ({ "이름": name }));
     renderDataTable(headers, data);
     directInputMessage.innerHTML = '<p class="success">데이터 추가 완료!</p>';
 }
 
-// 데이터 테이블 렌더링 (최대 5줄 표시)
+// 데이터 테이블 렌더링
 function renderDataTable(headers, rows) {
     // 헤더 설정
     tableHeader.innerHTML = '';
@@ -226,9 +260,9 @@ function renderDataTable(headers, rows) {
         tableHeader.appendChild(th);
     });
 
-    // 바디 설정 (최대 5줄)
+    // 바디 설정
     tableBody.innerHTML = '';
-    rows.slice(0, 5).forEach(row => {
+    rows.forEach(row => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
@@ -243,7 +277,7 @@ function renderDataTable(headers, rows) {
     allWinnersSection.classList.remove('hidden');
     previousWinnersSection.classList.remove('hidden');
 
-    dataMessage.innerHTML = '<p class="success">데이터가 성공적으로 로드됐습니다! (최대 5줄만 표시됩니다.)</p>';
+    dataMessage.innerHTML = '<p class="success">데이터가 성공적으로 로드됐습니다!(데이터 일부만 노출됩니다.)</p>';
 }
 
 // 추첨 처리
@@ -298,7 +332,7 @@ function getRandomWinners(dataArray, num) {
     return shuffled.slice(0, num);
 }
 
-// 당첨자 테이블 렌더링 (모든 컬럼 표시)
+// 당첨자 테이블 렌더링
 function renderWinners(winners) {
     winnersBody.innerHTML = '';
 
@@ -359,22 +393,20 @@ function updatePreviousWinnersDisplay() {
         table.appendChild(tbody);
         section.appendChild(table);
 
-        // 다운로드 버튼 감싸는 div 생성
-        const buttonGroup = document.createElement('div');
-        buttonGroup.classList.add('download-button-group'); // 새로운 클래스 적용
-
-        // CSV 다운로드 버튼
+        // 다운로드 버튼
+        const sanitizedDrawName = sanitizeFilename(draw);
+        // CSV 다운로드
         const csvButton = document.createElement('button');
         csvButton.textContent = `'${draw}' 당첨자 다운로드(CSV)`;
         csvButton.addEventListener('click', () => {
             const csvContent = [headers.join(',')].concat(
                 winners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
             ).join('\n');
-            downloadFile(`${sanitizeFilename(draw)}.csv`, 'text/csv', csvContent);
+            downloadFile(`${sanitizedDrawName}.csv`, 'text/csv', csvContent);
         });
-        buttonGroup.appendChild(csvButton);
+        section.appendChild(csvButton);
 
-        // Excel 다운로드 버튼
+        // Excel 다운로드
         const excelButton = document.createElement('button');
         excelButton.textContent = `'${draw}' 당첨자 다운로드(Excel)`;
         excelButton.style.marginLeft = '10px';
@@ -382,14 +414,14 @@ function updatePreviousWinnersDisplay() {
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(winners);
             XLSX.utils.book_append_sheet(wb, ws, "Winners");
-            XLSX.writeFile(wb, `${sanitizeFilename(draw)}.xlsx`);
+            XLSX.writeFile(wb, `${sanitizedDrawName}.xlsx`);
         });
-        buttonGroup.appendChild(excelButton);
+        section.appendChild(excelButton);
 
-        section.appendChild(buttonGroup);
         previousWinnersContainer.appendChild(section);
     }
-    // 기존 당첨자 제외 표시 업데이트
+
+    // '기존 당첨자 제외' 옵션 업데이트
     updateExcludePreviousVisibility();
 }
 
@@ -414,105 +446,4 @@ function downloadFile(filename, mimeType, content) {
 
 // 유틸리티 함수: 파일명 정화
 function sanitizeFilename(filename) {
-    return filename.replace(/[<>:"/\\|?*]/g, '_').trim() || "당첨자_목록";
-}
-
-// 데이터 비교 함수
-function isEqual(obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-}
-
-// 당첨자 CSV 다운로드
-function downloadWinnersAsCSV() {
-    if (previousWinners.length === 0) {
-        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
-        return;
-    }
-    const lastDrawName = previousWinners[previousWinners.length - 1]['Draw Name'];
-    const winners = previousWinners.filter(w => w['Draw Name'] === lastDrawName);
-    const csvContent = [headers.join(',')].concat(
-        winners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
-    ).join('\n');
-    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.csv';
-    downloadFile(filename, 'text/csv', csvContent);
-}
-
-// 당첨자 Excel 다운로드
-function downloadWinnersAsExcel() {
-    if (previousWinners.length === 0) {
-        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
-        return;
-    }
-    const lastDrawName = previousWinners[previousWinners.length - 1]['Draw Name'];
-    const winners = previousWinners.filter(w => w['Draw Name'] === lastDrawName);
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(winners);
-    XLSX.utils.book_append_sheet(wb, ws, "Winners");
-    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.xlsx';
-    XLSX.writeFile(wb, filename);
-}
-
-// 전체 당첨자 CSV 다운로드
-function downloadAllWinnersAsCSV() {
-    if (previousWinners.length === 0) {
-        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
-        return;
-    }
-    const csvContent = [headers.join(',')].concat(
-        previousWinners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
-    ).join('\n');
-    const filename = sanitizeFilename('당첨자_목록') + '.csv';
-    downloadFile(filename, 'text/csv', csvContent);
-}
-
-// 전체 당첨자 Excel 다운로드
-function downloadAllWinnersAsExcel() {
-    if (previousWinners.length === 0) {
-        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
-        return;
-    }
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(previousWinners);
-    XLSX.utils.book_append_sheet(wb, ws, "All Winners");
-    const filename = sanitizeFilename('전체 당첨자 목록') + '.xlsx';
-    XLSX.writeFile(wb, filename);
-}
-
-// 초기화 함수
-function resetAll() {
-    if (confirm('정말로 초기화하시겠습니까? 모든 데이터가 삭제됩니다.')) {
-        data = [];
-        previousWinners = [];
-        currentRound = 1;
-        headers = [];
-        tableHeader.innerHTML = '';
-        tableBody.innerHTML = '';
-        winnersTableHeader.innerHTML = '';
-        winnersBody.innerHTML = '';
-        previousWinnersContainer.innerHTML = '';
-        dataTableSection.classList.add('hidden');
-        drawControlsSection.classList.add('hidden');
-        winnersSection.classList.add('hidden');
-        allWinnersSection.classList.add('hidden');
-        previousWinnersSection.classList.add('hidden');
-        fileMessage.innerHTML = '';
-        googleSheetMessage.innerHTML = '';
-        directInputMessage.innerHTML = '';
-        dataMessage.innerHTML = '';
-        drawMessage.innerHTML = '';
-        updateExcludePreviousVisibility(); // '기존 당첨자 제외' 옵션 숨김
-    }
-}
-
-// '기존 당첨자 제외' 옵션의 표시 여부 업데이트 함수
-function updateExcludePreviousVisibility() {
-    if (previousWinners.length > 0) {
-        excludePreviousContainer.classList.remove('hidden');
-    } else {
-        excludePreviousContainer.classList.add('hidden');
-        excludePrevious.checked = false; // 체크 해제
-    }
-}
-
-// 초기화 실행
-initialize();
+    return filename.replace
