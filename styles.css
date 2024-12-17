@@ -1,6 +1,6 @@
 /* IBM Plex Sans KR 글꼴을 기본 본문 폰트로 설정 */
 body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Gmarket Sans', 'Noto Sans KR', sans-serif;
     background-color: #f5f5f5;
     color: #333333;
     margin: 0;
