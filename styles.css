@@ -90,11 +90,28 @@ button:hover {
     margin-bottom: 10px; /* 목록 하단에 간격 추가 */
 }
 
-/* 다운로드 버튼 스타일 (하단에 배치) */
+/* 다운로드 버튼 스타일 (목록 창 바로 하단에 배치) */
+.download-button {
+    display: block;
+    margin-top: 10px; /* 목록과 버튼 사이 간격 */
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    background-color: transparent;
+    color: #1976d2;
+    border: 2px solid #1976d2;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.download-button:hover {
+    background-color: rgba(25, 118, 210, 0.1);
+    color: #115293;
+}
+
 .download-buttons {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px; /* 버튼 사이 간격 */
-    margin-top: 10px; /* 버튼과 리스트 사이 간격 */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
 }
