@@ -103,74 +103,48 @@ function handleFileUpload() {
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        const dataBinary = e.target.result;
-        let workbook;
-        try {
-            workbook = XLSX.read(dataBinary, {type: 'binary'});
-        } catch (error) {
-            fileMessage.innerHTML = `<p class="error">엑셀 파일을 읽는 중 오류가 발생했습니다: ${error.message}</p>`;
-            return;
+        let jsonData;
+        if (file.name.endsWith('.csv')) {
+            const csv = e.target.result;
+            const workbook = XLSX.read(csv, {type: 'string'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
+        } else {
+            const dataBinary = e.target.result;
+            try {
+                const workbook = XLSX.read(dataBinary, {type: 'binary'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
+            } catch (error) {
+                fileMessage.innerHTML = `<p class="error">엑셀 파일을 읽는 중 오류가 발생했습니다: ${error.message}</p>`;
+                return;
+            }
         }
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
+
         if (jsonData.length === 0) {
-            fileMessage.innerHTML = '<p class="error">엑셀 파일이 비어 있습니다.</p>';
+            fileMessage.innerHTML = '<p class="error">파일이 비어 있습니다.</p>';
             return;
         }
+
         // 첫 번째 행을 헤더로 사용
         headers = jsonData[0].map(header => header.trim());
-        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
-
-        if (nameIndex === -1) {
-            fileMessage.innerHTML = '<p class="error">엑셀 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
-            return;
-        }
-
         const rows = jsonData.slice(1).map(row => {
             let obj = {};
             headers.forEach((header, index) => {
                 obj[header] = row[index] ? row[index].toString().trim() : '';
             });
             return obj;
-        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
+        }).filter(row => Object.values(row).some(value => value !== ''));
 
         data = rows;
         renderDataTable(headers, rows);
         fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
     };
+
     if (file.name.endsWith('.csv')) {
         reader.readAsText(file);
-        reader.onload = function(e) {
-            const csv = e.target.result;
-            const workbook = XLSX.read(csv, {type: 'string'});
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header:1});
-            if (jsonData.length === 0) {
-                fileMessage.innerHTML = '<p class="error">CSV 파일이 비어 있습니다.</p>';
-                return;
-            }
-            headers = jsonData[0].map(header => header.trim());
-            const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
-
-            if (nameIndex === -1) {
-                fileMessage.innerHTML = '<p class="error">CSV 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
-                return;
-            }
-
-            const rows = jsonData.slice(1).map(row => {
-                let obj = {};
-                headers.forEach((header, index) => {
-                    obj[header] = row[index] ? row[index].toString().trim() : '';
-                });
-                return obj;
-            }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
-
-            data = rows;
-            renderDataTable(headers, rows);
-            fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
-        };
     } else {
         reader.readAsBinaryString(file);
     }
@@ -207,20 +181,13 @@ async function handleGoogleSheet() {
             return;
         }
         headers = jsonData[0].map(header => header.trim());
-        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
-
-        if (nameIndex === -1) {
-            googleSheetMessage.innerHTML = '<p class="error">구글 시트에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
-            return;
-        }
-
         const rows = jsonData.slice(1).map(row => {
             let obj = {};
             headers.forEach((header, index) => {
                 obj[header] = row[index] ? row[index].toString().trim() : '';
             });
             return obj;
-        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
+        }).filter(row => Object.values(row).some(value => value !== ''));
 
         data = rows;
         renderDataTable(headers, rows);
@@ -243,8 +210,8 @@ function handleDirectInput() {
         directInputMessage.innerHTML = '<p class="error">입력된 데이터가 유효하지 않습니다.</p>';
         return;
     }
-    headers = ['이름']; // 직접 입력은 '이름'만 사용
-    data = entries.map(name => ({ "이름": name }));
+    headers = ['참가자']; // 직접 입력은 '참가자'만 사용
+    data = entries.map(entry => ({ "참가자": entry }));
     renderDataTable(headers, data);
     directInputMessage.innerHTML = '<p class="success">데이터 추가 완료!</p>';
 }
