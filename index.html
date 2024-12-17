@@ -23,7 +23,7 @@
         <hr>
 
         <!-- 데이터 소스 선택 -->
-        <div class="section">
+        <div class="section" id="dataSourceSection">
             <label>데이터 소스 선택:</label>
             <div>
                 <input type="radio" id="uploadOption" name="dataSource" value="upload" checked>
@@ -40,7 +40,7 @@
         </div>
 
         <!-- 엑셀/CSV 파일 업로드 섹션 -->
-        <div class="section" id="uploadSection">
+        <div class="section hidden" id="uploadSection">
             <label for="fileInput">엑셀 파일(.xlsx) 또는 CSV 파일(.csv)을 업로드하세요:</label>
             <input type="file" id="fileInput" accept=".xlsx, .csv">
             <button id="addFileButton">추가</button>
