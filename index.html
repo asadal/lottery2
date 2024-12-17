@@ -84,7 +84,8 @@
             <label for="winnerNumber">당첨자 수를 입력하세요:</label>
             <input type="number" id="winnerNumber" min="1" value="1">
 
-            <div class="checkbox-container">
+            <!-- '기존 당첨자 제외' 옵션을 감싸는 컨테이너에 ID 추가 -->
+            <div class="checkbox-container hidden" id="excludePreviousContainer">
                 <input type="checkbox" id="excludePrevious">
                 <label for="excludePrevious">기존 당첨자 제외</label>
             </div>
