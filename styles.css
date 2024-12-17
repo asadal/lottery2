@@ -1,6 +1,6 @@
 /* IBM Plex Sans KR 글꼴을 기본 본문 폰트로 설정 */
 body {
-    font-family: 'IBM Plex Sans KR', sans-serif;
+    font-family: 'Gmarket Sans', 'IBM Plex Sans KR', sans-serif;
     background-color: #f5f5f5;
     color: #333333;
     margin: 0;
@@ -153,14 +153,14 @@ hr {
 
 /* 당첨자 목록 섹션(#winnersSection) 스크롤 적용 */
 #winnersSection {
-    max-height: 500px; /* 높이 500px 고정 */
-    overflow: auto;    /* 스크롤 활성화 */
+    max-height: 500px;
+    overflow: auto;
     box-sizing: border-box;
 }
 
 /* 추첨별 당첨자 목록 섹션(#previousWinnersSection) 스크롤 적용 */
 #previousWinnersSection {
-    max-height: 500px; /* 높이 500px 고정 */
-    overflow: auto;    /* 스크롤 활성화 */
+    max-height: 500px;
+    overflow: auto;
     box-sizing: border-box;
 }
