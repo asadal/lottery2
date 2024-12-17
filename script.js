@@ -166,15 +166,12 @@ async function handleGoogleSheet() {
     }
     const fileId = match[1];
     const gid = match[2];
-    // CORS 프록시 사용 (주의: 공개 프록시는 안정적이지 않을 수 있음)
-    const corsProxy = 'https://cors-anywhere.herokuapp.com/'; // 공개 CORS 프록시
+    // CORS 프록시 사용 (https://api.allorigins.win/raw?url=)
+    const corsProxy = 'https://api.allorigins.win/raw?url=';
     const csvUrl = `https://docs.google.com/spreadsheets/d/${fileId}/export?format=csv&gid=${gid}`;
     try {
-        const response = await fetch(corsProxy + csvUrl, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
+        const fetchUrl = corsProxy + encodeURIComponent(csvUrl);
+        const response = await fetch(fetchUrl);
         if (!response.ok) throw new Error('네트워크 응답이 올바르지 않습니다.');
         const csv = await response.text();
         const workbook = XLSX.read(csv, {type: 'string'});
