@@ -1,4 +1,3 @@
-
 // 전역 변수
 let data = [];
 let previousWinners = [];
