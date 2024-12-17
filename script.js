@@ -2,6 +2,7 @@
 let data = [];
 let previousWinners = [];
 let currentRound = 1;
+let headers = []; // 데이터 헤더를 저장하는 변수
 
 // DOM 요소
 const uploadOption = document.getElementById('uploadOption');
@@ -40,6 +41,7 @@ const drawMessage = document.getElementById('drawMessage');
 const excludePreviousContainer = document.getElementById('excludePreviousContainer');
 
 const winnersSection = document.getElementById('winnersSection');
+const winnersTableHeader = document.getElementById('winnersTableHeader');
 const winnersBody = document.getElementById('winnersBody');
 const downloadWinnersCSV = document.getElementById('downloadWinnersCSV');
 const downloadWinnersExcel = document.getElementById('downloadWinnersExcel');
@@ -117,7 +119,7 @@ function handleFileUpload() {
             return;
         }
         // 첫 번째 행을 헤더로 사용
-        const headers = jsonData[0].map(header => header.trim());
+        headers = jsonData[0].map(header => header.trim());
         const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
 
         if (nameIndex === -1) {
@@ -126,11 +128,15 @@ function handleFileUpload() {
         }
 
         const rows = jsonData.slice(1).map(row => {
-            return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
-        }).filter(row => row.Name !== '');
+            let obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index] ? row[index].toString().trim() : '';
+            });
+            return obj;
+        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
 
         data = rows;
-        renderDataTable(["이름"], rows);
+        renderDataTable(headers, rows);
         fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
     };
     if (file.name.endsWith('.csv')) {
@@ -145,7 +151,7 @@ function handleFileUpload() {
                 fileMessage.innerHTML = '<p class="error">CSV 파일이 비어 있습니다.</p>';
                 return;
             }
-            const headers = jsonData[0].map(header => header.trim());
+            headers = jsonData[0].map(header => header.trim());
             const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
 
             if (nameIndex === -1) {
@@ -154,11 +160,15 @@ function handleFileUpload() {
             }
 
             const rows = jsonData.slice(1).map(row => {
-                return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
-            }).filter(row => row.Name !== '');
+                let obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = row[index] ? row[index].toString().trim() : '';
+                });
+                return obj;
+            }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
 
             data = rows;
-            renderDataTable(["이름"], rows);
+            renderDataTable(headers, rows);
             fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
         };
     } else {
@@ -196,7 +206,7 @@ async function handleGoogleSheet() {
             googleSheetMessage.innerHTML = '<p class="error">구글 시트가 비어 있습니다.</p>';
             return;
         }
-        const headers = jsonData[0].map(header => header.trim());
+        headers = jsonData[0].map(header => header.trim());
         const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
 
         if (nameIndex === -1) {
@@ -205,11 +215,15 @@ async function handleGoogleSheet() {
         }
 
         const rows = jsonData.slice(1).map(row => {
-            return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
-        }).filter(row => row.Name !== '');
+            let obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = row[index] ? row[index].toString().trim() : '';
+            });
+            return obj;
+        }).filter(row => row['이름'] !== '' && row['이름'] !== 'Name');
 
         data = rows;
-        renderDataTable(["이름"], rows);
+        renderDataTable(headers, rows);
         googleSheetMessage.innerHTML = '<p class="success">구글 시트 데이터 추가 완료!</p>';
     } catch (error) {
         googleSheetMessage.innerHTML = `<p class="error">구글 시트를 로드하는 중 오류가 발생했습니다: ${error.message}</p>`;
@@ -229,8 +243,9 @@ function handleDirectInput() {
         directInputMessage.innerHTML = '<p class="error">입력된 데이터가 유효하지 않습니다.</p>';
         return;
     }
-    data = entries.map(name => ({ "Name": name }));
-    renderDataTable(["이름"], data);
+    headers = ['이름']; // 직접 입력은 '이름'만 사용
+    data = entries.map(name => ({ "이름": name }));
+    renderDataTable(headers, data);
     directInputMessage.innerHTML = '<p class="success">데이터 추가 완료!</p>';
 }
 
@@ -250,7 +265,7 @@ function renderDataTable(headers, rows) {
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
-            td.textContent = row["Name"] || '';
+            td.textContent = row[header] || '';
             tr.appendChild(td);
         });
         tableBody.appendChild(tr);
@@ -319,11 +334,23 @@ function getRandomWinners(dataArray, num) {
 // 당첨자 테이블 렌더링
 function renderWinners(winners) {
     winnersBody.innerHTML = '';
+
+    // Winners Table 헤더 설정
+    winnersTableHeader.innerHTML = '';
+    headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        winnersTableHeader.appendChild(th);
+    });
+
+    // Winners Table 바디 설정
     winners.forEach(winner => {
         const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.textContent = winner['Name'] || 'Unknown';
-        tr.appendChild(td);
+        headers.forEach(header => {
+            const td = document.createElement('td');
+            td.textContent = winner[header] || 'Unknown';
+            tr.appendChild(td);
+        });
         winnersBody.appendChild(tr);
     });
     winnersSection.classList.remove('hidden');
@@ -344,18 +371,22 @@ function updatePreviousWinnersDisplay() {
         const table = document.createElement('table');
         const thead = document.createElement('thead');
         const trHead = document.createElement('tr');
-        const th = document.createElement('th');
-        th.textContent = '이름';
-        trHead.appendChild(th);
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            trHead.appendChild(th);
+        });
         thead.appendChild(trHead);
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
         winners.forEach(winner => {
             const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.textContent = winner['Name'] || 'Unknown';
-            tr.appendChild(td);
+            headers.forEach(header => {
+                const td = document.createElement('td');
+                td.textContent = winner[header] || 'Unknown';
+                tr.appendChild(td);
+            });
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
@@ -367,7 +398,9 @@ function updatePreviousWinnersDisplay() {
         const csvButton = document.createElement('button');
         csvButton.textContent = `'${draw}' 당첨자 다운로드(CSV)`;
         csvButton.addEventListener('click', () => {
-            const csvContent = winners.map(w => w['Name'] || 'Unknown').join('\n');
+            const csvContent = [headers.join(',')].concat(
+                winners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
+            ).join('\n');
             downloadFile(`${sanitizedDrawName}.csv`, 'text/csv', csvContent);
         });
         section.appendChild(csvButton);
@@ -378,7 +411,7 @@ function updatePreviousWinnersDisplay() {
         excelButton.style.marginLeft = '10px';
         excelButton.addEventListener('click', () => {
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['Name'] || 'Unknown' })));
+            const ws = XLSX.utils.json_to_sheet(winners);
             XLSX.utils.book_append_sheet(wb, ws, "Winners");
             XLSX.writeFile(wb, `${sanitizedDrawName}.xlsx`);
         });
@@ -412,81 +445,4 @@ function downloadFile(filename, mimeType, content) {
 
 // 유틸리티 함수: 파일명 정화
 function sanitizeFilename(filename) {
-    return filename.replace(/[<>:"/\\|?*]/g, '_').trim() || "당첨자_목록";
-}
-
-// 데이터 비교 함수
-function isEqual(obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-}
-
-// 당첨자 CSV 다운로드
-function downloadWinnersAsCSV() {
-    const winners = previousWinners.slice(-1); // 마지막 추첨만 다운로드
-    const csvContent = winners.map(w => w['Name'] || 'Unknown').join('\n');
-    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.csv';
-    downloadFile(filename, 'text/csv', csvContent);
-}
-
-// 당첨자 Excel 다운로드
-function downloadWinnersAsExcel() {
-    const winners = previousWinners.slice(-1); // 마지막 추첨만 다운로드
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['Name'] || 'Unknown' })));
-    XLSX.utils.book_append_sheet(wb, ws, "Winners");
-    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.xlsx';
-    XLSX.writeFile(wb, filename);
-}
-
-// 전체 당첨자 CSV 다운로드
-function downloadAllWinnersAsCSV() {
-    const csvContent = previousWinners.map(w => `${w['Draw Name']},${w['Name'] || 'Unknown'}`).join('\n');
-    const filename = sanitizeFilename('당첨자_목록') + '.csv';
-    downloadFile(filename, 'text/csv', csvContent);
-}
-
-// 전체 당첨자 Excel 다운로드
-function downloadAllWinnersAsExcel() {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(previousWinners.map(w => ({ "Draw Name": w['Draw Name'], "이름": w['Name'] || 'Unknown' })));
-    XLSX.utils.book_append_sheet(wb, ws, "All Winners");
-    const filename = sanitizeFilename('전체 당첨자 목록') + '.xlsx';
-    XLSX.writeFile(wb, filename);
-}
-
-// 초기화 함수
-function resetAll() {
-    if (confirm('정말로 초기화하시겠습니까? 모든 데이터가 삭제됩니다.')) {
-        data = [];
-        previousWinners = [];
-        currentRound = 1;
-        tableHeader.innerHTML = '';
-        tableBody.innerHTML = '';
-        winnersBody.innerHTML = '';
-        previousWinnersContainer.innerHTML = '';
-        dataTableSection.classList.add('hidden');
-        drawControlsSection.classList.add('hidden');
-        winnersSection.classList.add('hidden');
-        allWinnersSection.classList.add('hidden');
-        previousWinnersSection.classList.add('hidden');
-        fileMessage.innerHTML = '';
-        googleSheetMessage.innerHTML = '';
-        directInputMessage.innerHTML = '';
-        dataMessage.innerHTML = '';
-        drawMessage.innerHTML = '';
-        updateExcludePreviousVisibility(); // '기존 당첨자 제외' 옵션 숨김
-    }
-}
-
-// '기존 당첨자 제외' 옵션의 표시 여부 업데이트 함수
-function updateExcludePreviousVisibility() {
-    if (previousWinners.length > 0) {
-        excludePreviousContainer.classList.remove('hidden');
-    } else {
-        excludePreviousContainer.classList.add('hidden');
-        excludePrevious.checked = false; // 체크 해제
-    }
-}
-
-// 초기화 실행
-initialize();
+    return filename.replace
