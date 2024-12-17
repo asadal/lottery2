@@ -51,11 +51,11 @@ label {
 
 /* 전체 버튼 스타일 수정 */
 button {
-    padding: 10px 20px;
+    padding: 5px 10px; /* padding 수정: 5px 상하, 10px 좌우 */
     background-color: transparent; /* 배경색 제거 */
     color: #1976d2; /* 텍스트 색상 파란색으로 설정 */
     border: 2px solid #1976d2; /* 외곽선 색상 파란색 */
-    border-radius: 8px; /* 모서리 라운드 조정 */
+    border-radius: 12px; /* 모서리 라운드 조정 */
     cursor: pointer;
     margin-right: 10px;
     font-size: 14px;
