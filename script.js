@@ -36,6 +36,9 @@ const drawName = document.getElementById('drawName');
 const drawButton = document.getElementById('drawButton');
 const drawMessage = document.getElementById('drawMessage');
 
+// '기존 당첨자 제외' 옵션을 감싸는 컨테이너 요소
+const excludePreviousContainer = document.getElementById('excludePreviousContainer');
+
 const winnersSection = document.getElementById('winnersSection');
 const winnersBody = document.getElementById('winnersBody');
 const downloadWinnersCSV = document.getElementById('downloadWinnersCSV');
@@ -68,6 +71,9 @@ function initialize() {
     downloadAllWinnersCSV.addEventListener('click', downloadAllWinnersAsCSV);
     downloadAllWinnersExcel.addEventListener('click', downloadAllWinnersAsExcel);
     resetButton.addEventListener('click', resetAll);
+
+    // '기존 당첨자 제외' 옵션의 초기 상태 설정
+    updateExcludePreviousVisibility();
 }
 
 // 데이터 소스 선택에 따라 섹션 토글
@@ -287,6 +293,7 @@ function handleDraw() {
             renderWinners(finalWinners);
             drawMessage.innerHTML = '<p class="success">당첨자가 선정됐습니다!</p>';
             updatePreviousWinnersDisplay();
+            updateExcludePreviousVisibility(); // '기존 당첨자 제외' 옵션 업데이트
         }
     }, 50);
 }
@@ -367,6 +374,9 @@ function updatePreviousWinnersDisplay() {
 
         previousWinnersContainer.appendChild(section);
     }
+
+    // '기존 당첨자 제외' 옵션 업데이트
+    updateExcludePreviousVisibility();
 }
 
 // 유틸리티 함수: 그룹화
@@ -452,6 +462,17 @@ function resetAll() {
         directInputMessage.innerHTML = '';
         dataMessage.innerHTML = '';
         drawMessage.innerHTML = '';
+        updateExcludePreviousVisibility(); // '기존 당첨자 제외' 옵션 숨김
+    }
+}
+
+// '기존 당첨자 제외' 옵션의 표시 여부 업데이트 함수
+function updateExcludePreviousVisibility() {
+    if (previousWinners.length > 0) {
+        excludePreviousContainer.classList.remove('hidden');
+    } else {
+        excludePreviousContainer.classList.add('hidden');
+        excludePrevious.checked = false; // 체크 해제
     }
 }
 
