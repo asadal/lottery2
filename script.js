@@ -117,16 +117,20 @@ function handleFileUpload() {
             return;
         }
         // 첫 번째 행을 헤더로 사용
-        const headers = jsonData[0];
+        const headers = jsonData[0].map(header => header.trim());
+        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+        if (nameIndex === -1) {
+            fileMessage.innerHTML = '<p class="error">엑셀 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
+            return;
+        }
+
         const rows = jsonData.slice(1).map(row => {
-            let obj = {};
-            headers.forEach((header, index) => {
-                obj[header] = row[index] || '';
-            });
-            return obj;
-        });
+            return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
+        }).filter(row => row.Name !== '');
+
         data = rows;
-        renderDataTable(headers, rows);
+        renderDataTable(["이름"], rows);
         fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
     };
     if (file.name.endsWith('.csv')) {
@@ -141,16 +145,20 @@ function handleFileUpload() {
                 fileMessage.innerHTML = '<p class="error">CSV 파일이 비어 있습니다.</p>';
                 return;
             }
-            const headers = jsonData[0];
+            const headers = jsonData[0].map(header => header.trim());
+            const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+            if (nameIndex === -1) {
+                fileMessage.innerHTML = '<p class="error">CSV 파일에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
+                return;
+            }
+
             const rows = jsonData.slice(1).map(row => {
-                let obj = {};
-                headers.forEach((header, index) => {
-                    obj[header] = row[index] || '';
-                });
-                return obj;
-            });
+                return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
+            }).filter(row => row.Name !== '');
+
             data = rows;
-            renderDataTable(headers, rows);
+            renderDataTable(["이름"], rows);
             fileMessage.innerHTML = '<p class="success">파일 추가 완료!</p>';
         };
     } else {
@@ -188,16 +196,20 @@ async function handleGoogleSheet() {
             googleSheetMessage.innerHTML = '<p class="error">구글 시트가 비어 있습니다.</p>';
             return;
         }
-        const headers = jsonData[0];
+        const headers = jsonData[0].map(header => header.trim());
+        const nameIndex = headers.findIndex(header => header === '이름' || header.toLowerCase() === 'name');
+
+        if (nameIndex === -1) {
+            googleSheetMessage.innerHTML = '<p class="error">구글 시트에 "이름" 또는 "Name" 컬럼이 없습니다.</p>';
+            return;
+        }
+
         const rows = jsonData.slice(1).map(row => {
-            let obj = {};
-            headers.forEach((header, index) => {
-                obj[header] = row[index] || '';
-            });
-            return obj;
-        });
+            return { "Name": row[nameIndex] ? row[nameIndex].toString().trim() : '' };
+        }).filter(row => row.Name !== '');
+
         data = rows;
-        renderDataTable(headers, rows);
+        renderDataTable(["이름"], rows);
         googleSheetMessage.innerHTML = '<p class="success">구글 시트 데이터 추가 완료!</p>';
     } catch (error) {
         googleSheetMessage.innerHTML = `<p class="error">구글 시트를 로드하는 중 오류가 발생했습니다: ${error.message}</p>`;
@@ -217,7 +229,7 @@ function handleDirectInput() {
         directInputMessage.innerHTML = '<p class="error">입력된 데이터가 유효하지 않습니다.</p>';
         return;
     }
-    data = entries.map(name => ({ "이름": name }));
+    data = entries.map(name => ({ "Name": name }));
     renderDataTable(["이름"], data);
     directInputMessage.innerHTML = '<p class="success">데이터 추가 완료!</p>';
 }
@@ -238,7 +250,7 @@ function renderDataTable(headers, rows) {
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
-            td.textContent = row[header] || '';
+            td.textContent = row["Name"] || '';
             tr.appendChild(td);
         });
         tableBody.appendChild(tr);
@@ -310,7 +322,7 @@ function renderWinners(winners) {
     winners.forEach(winner => {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.textContent = winner['이름'] || winner['Name'] || 'Unknown';
+        td.textContent = winner['Name'] || 'Unknown';
         tr.appendChild(td);
         winnersBody.appendChild(tr);
     });
@@ -342,7 +354,7 @@ function updatePreviousWinnersDisplay() {
         winners.forEach(winner => {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.textContent = winner['이름'] || winner['Name'] || 'Unknown';
+            td.textContent = winner['Name'] || 'Unknown';
             tr.appendChild(td);
             tbody.appendChild(tr);
         });
@@ -355,7 +367,7 @@ function updatePreviousWinnersDisplay() {
         const csvButton = document.createElement('button');
         csvButton.textContent = `'${draw}' 당첨자 다운로드(CSV)`;
         csvButton.addEventListener('click', () => {
-            const csvContent = winners.map(w => w['이름'] || w['Name'] || 'Unknown').join('\n');
+            const csvContent = winners.map(w => w['Name'] || 'Unknown').join('\n');
             downloadFile(`${sanitizedDrawName}.csv`, 'text/csv', csvContent);
         });
         section.appendChild(csvButton);
@@ -366,7 +378,7 @@ function updatePreviousWinnersDisplay() {
         excelButton.style.marginLeft = '10px';
         excelButton.addEventListener('click', () => {
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['이름'] || w['Name'] || 'Unknown' })));
+            const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['Name'] || 'Unknown' })));
             XLSX.utils.book_append_sheet(wb, ws, "Winners");
             XLSX.writeFile(wb, `${sanitizedDrawName}.xlsx`);
         });
@@ -411,7 +423,7 @@ function isEqual(obj1, obj2) {
 // 당첨자 CSV 다운로드
 function downloadWinnersAsCSV() {
     const winners = previousWinners.slice(-1); // 마지막 추첨만 다운로드
-    const csvContent = winners.map(w => w['이름'] || w['Name'] || 'Unknown').join('\n');
+    const csvContent = winners.map(w => w['Name'] || 'Unknown').join('\n');
     const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.csv';
     downloadFile(filename, 'text/csv', csvContent);
 }
@@ -420,7 +432,7 @@ function downloadWinnersAsCSV() {
 function downloadWinnersAsExcel() {
     const winners = previousWinners.slice(-1); // 마지막 추첨만 다운로드
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['이름'] || w['Name'] || 'Unknown' })));
+    const ws = XLSX.utils.json_to_sheet(winners.map(w => ({ "이름": w['Name'] || 'Unknown' })));
     XLSX.utils.book_append_sheet(wb, ws, "Winners");
     const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.xlsx';
     XLSX.writeFile(wb, filename);
@@ -428,7 +440,7 @@ function downloadWinnersAsExcel() {
 
 // 전체 당첨자 CSV 다운로드
 function downloadAllWinnersAsCSV() {
-    const csvContent = previousWinners.map(w => `${w['Draw Name']},${w['이름'] || w['Name'] || 'Unknown'}`).join('\n');
+    const csvContent = previousWinners.map(w => `${w['Draw Name']},${w['Name'] || 'Unknown'}`).join('\n');
     const filename = sanitizeFilename('당첨자_목록') + '.csv';
     downloadFile(filename, 'text/csv', csvContent);
 }
@@ -436,7 +448,7 @@ function downloadAllWinnersAsCSV() {
 // 전체 당첨자 Excel 다운로드
 function downloadAllWinnersAsExcel() {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(previousWinners.map(w => ({ "Draw Name": w['Draw Name'], "이름": w['이름'] || w['Name'] || 'Unknown' })));
+    const ws = XLSX.utils.json_to_sheet(previousWinners.map(w => ({ "Draw Name": w['Draw Name'], "이름": w['Name'] || 'Unknown' })));
     XLSX.utils.book_append_sheet(wb, ws, "All Winners");
     const filename = sanitizeFilename('전체 당첨자 목록') + '.xlsx';
     XLSX.writeFile(wb, filename);
