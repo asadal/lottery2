@@ -68,34 +68,67 @@
         <!-- 데이터 테이블 섹션 -->
         <div class="section hidden" id="dataTableSection">
             <h2>참가자 목록</h2>
-            <div id="dataTable" class="scrollable-list">
-                <!-- 참가자 목록 내용이 여기에 동적으로 추가됨 -->
-            </div>
-            <!-- 참가자 목록 다운로드 버튼은 창 바로 하단에 위치 -->
-            <button id="downloadParticipantsCSV" class="download-button">참가자 목록 다운로드(CSV)</button>
-            <button id="downloadParticipantsExcel" class="download-button">참가자 목록 다운로드(Excel)</button>
+            <table id="dataTable">
+                <thead>
+                    <tr id="tableHeader">
+                        <!-- 동적으로 생성 -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- 동적으로 생성 -->
+                </tbody>
+            </table>
+            <div id="dataMessage"></div>
         </div>
 
-        <!-- 당첨자 목록 섹션 -->
+        <!-- 추첨 컨트롤 섹션 -->
+        <div class="section hidden" id="drawControlsSection">
+            <label for="winnerNumber">당첨자 수를 입력하세요:</label>
+            <input type="number" id="winnerNumber" min="1" value="1">
+
+            <!-- '기존 당첨자 제외' 옵션을 감싸는 컨테이너에 ID 추가 -->
+            <div class="checkbox-container hidden" id="excludePreviousContainer">
+                <input type="checkbox" id="excludePrevious">
+                <label for="excludePrevious">기존 당첨자 제외</label>
+            </div>
+
+            <label for="drawName">추첨명을 입력하세요:</label>
+            <input type="text" id="drawName" placeholder="예: 추첨 1">
+
+            <button id="drawButton">추첨하기</button>
+            <div id="drawMessage"></div>
+        </div>
+
+        <!-- 당첨자 표시 섹션 -->
         <div class="section hidden" id="winnersSection">
             <h2>당첨자 목록</h2>
-            <div id="winnersTable" class="scrollable-list">
-                <!-- 당첨자 목록 내용이 여기에 동적으로 추가됨 -->
-            </div>
-            <!-- 당첨자 목록 다운로드 버튼은 창 바로 하단에 위치 -->
-            <button id="downloadWinnersCSV" class="download-button">당첨자 목록 다운로드(CSV)</button>
-            <button id="downloadWinnersExcel" class="download-button">당첨자 목록 다운로드(Excel)</button>
+            <table id="winnersTable">
+                <thead>
+                    <tr id="winnersTableHeader">
+                        <!-- 동적으로 생성 -->
+                    </tr>
+                </thead>
+                <tbody id="winnersBody">
+                    <!-- 당첨자 목록 -->
+                </tbody>
+            </table>
+            <button id="downloadWinnersCSV">당첨자 목록 다운로드(CSV)</button>
+            <button id="downloadWinnersExcel">당첨자 목록 다운로드(Excel)</button>
         </div>
 
-        <!-- 추첨별 당첨자 목록 섹션 -->
+        <!-- 전체 당첨자 목록 다운로드 섹션 -->
+        <div class="section hidden" id="allWinnersSection">
+            <h2>전체 당첨자 목록 다운로드</h2>
+            <button id="downloadAllWinnersCSV" class="download-all-button">전체 당첨자 목록 다운로드(CSV)</button>
+            <button id="downloadAllWinnersExcel" class="download-all-button">전체 당첨자 목록 다운로드(Excel)</button>
+        </div>
+
+        <!-- 기존 당첨자 보기 섹션 -->
         <div class="section hidden" id="previousWinnersSection">
             <h2>추첨별 당첨자 목록</h2>
-            <div id="previousWinnersContainer" class="scrollable-list">
-                <!-- 추첨별 당첨자 목록 내용이 여기에 동적으로 추가됨 -->
+            <div id="previousWinnersContainer">
+                <!-- 동적으로 생성 -->
             </div>
-            <!-- 추첨별 당첨자 목록 다운로드 버튼은 창 바로 하단에 위치 -->
-            <button id="downloadPreviousWinnersCSV" class="download-button">추첨별 당첨자 목록 다운로드(CSV)</button>
-            <button id="downloadPreviousWinnersExcel" class="download-button">추첨별 당첨자 목록 다운로드(Excel)</button>
         </div>
 
     </div>
