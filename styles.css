@@ -82,36 +82,85 @@ button:hover {
     color: #2e7d32;
 }
 
-/* 스크롤이 가능한 목록 창 스타일 */
-.scrollable-list {
+/* 테이블 스타일 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #dddddd;
+}
+
+th {
+    background-color: #f0f0f0;
+}
+
+/* 체크박스 컨테이너 스타일 */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.checkbox-container input {
+    margin-right: 8px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* 메시지 스타일 */
+.success {
+    color: #388e3c;
+    margin-top: 10px;
+}
+
+.error {
+    color: #d32f2f;
+    margin-top: 10px;
+}
+
+.info {
+    color: #1976d2;
+    margin-top: 10px;
+}
+
+/* 구분선 스타일 */
+hr {
+    border: none;
+    border-top: 1px solid #dddddd;
+    margin: 30px 0;
+}
+
+/* 데이터 소스 선택 섹션의 라디오 버튼과 레이블을 한 줄로 배치 */
+#dataSourceSection > div {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+/* 참가자 목록 섹션(#dataTableSection) 스크롤 적용 */
+#dataTableSection {
     max-height: 500px; /* 높이 500px 고정 */
     overflow: auto;    /* 스크롤 활성화 */
     box-sizing: border-box;
-    margin-bottom: 10px; /* 목록 하단에 간격 추가 */
 }
 
-/* 다운로드 버튼 스타일 (목록 텍스트 창 바로 하단에 배치) */
-.download-button {
-    display: block;
-    margin-top: 10px; /* 목록과 버튼 사이 간격 */
-    width: 100%;
-    padding: 8px;
-    text-align: center;
-    background-color: transparent;
-    color: #1976d2;
-    border: 2px solid #1976d2;
-    border-radius: 12px;
-    cursor: pointer;
+/* 당첨자 목록 섹션(#winnersSection) 스크롤 적용 */
+#winnersSection {
+    max-height: 500px;
+    overflow: auto;
+    box-sizing: border-box;
 }
 
-.download-button:hover {
-    background-color: rgba(25, 118, 210, 0.1);
-    color: #115293;
-}
-
-.download-buttons {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+/* 추첨별 당첨자 목록 섹션(#previousWinnersSection) 스크롤 적용 */
+#previousWinnersSection {
+    max-height: 500px;
+    overflow: auto;
+    box-sizing: border-box;
 }
