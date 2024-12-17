@@ -44,7 +44,7 @@ input[type="file"] {
 }
 
 label {
-    font-weight: bold;
+    font-weight: normal; /* 볼드 해제 */
     display: block;
     margin-bottom: 4px;
 }
