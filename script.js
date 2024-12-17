@@ -249,7 +249,7 @@ function handleDirectInput() {
     directInputMessage.innerHTML = '<p class="success">데이터 추가 완료!</p>';
 }
 
-// 데이터 테이블 렌더링
+// 데이터 테이블 렌더링 (최대 5줄 표시)
 function renderDataTable(headers, rows) {
     // 헤더 설정
     tableHeader.innerHTML = '';
@@ -259,9 +259,9 @@ function renderDataTable(headers, rows) {
         tableHeader.appendChild(th);
     });
 
-    // 바디 설정
+    // 바디 설정 (최대 5줄)
     tableBody.innerHTML = '';
-    rows.forEach(row => {
+    rows.slice(0, 5).forEach(row => {
         const tr = document.createElement('tr');
         headers.forEach(header => {
             const td = document.createElement('td');
@@ -276,7 +276,7 @@ function renderDataTable(headers, rows) {
     allWinnersSection.classList.remove('hidden');
     previousWinnersSection.classList.remove('hidden');
 
-    dataMessage.innerHTML = '<p class="success">데이터가 성공적으로 로드됐습니다!(데이터 일부만 노출됩니다.)</p>';
+    dataMessage.innerHTML = '<p class="success">데이터가 성공적으로 로드됐습니다! (최대 5줄만 표시됩니다.)</p>';
 }
 
 // 추첨 처리
@@ -331,7 +331,7 @@ function getRandomWinners(dataArray, num) {
     return shuffled.slice(0, num);
 }
 
-// 당첨자 테이블 렌더링
+// 당첨자 테이블 렌더링 (모든 컬럼 표시)
 function renderWinners(winners) {
     winnersBody.innerHTML = '';
 
@@ -445,4 +445,105 @@ function downloadFile(filename, mimeType, content) {
 
 // 유틸리티 함수: 파일명 정화
 function sanitizeFilename(filename) {
-    return filename.replace
+    return filename.replace(/[<>:"/\\|?*]/g, '_').trim() || "당첨자_목록";
+}
+
+// 데이터 비교 함수
+function isEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
+
+// 당첨자 CSV 다운로드
+function downloadWinnersAsCSV() {
+    if (previousWinners.length === 0) {
+        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
+        return;
+    }
+    const lastDrawName = previousWinners[previousWinners.length - 1]['Draw Name'];
+    const winners = previousWinners.filter(w => w['Draw Name'] === lastDrawName);
+    const csvContent = [headers.join(',')].concat(
+        winners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
+    ).join('\n');
+    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.csv';
+    downloadFile(filename, 'text/csv', csvContent);
+}
+
+// 당첨자 Excel 다운로드
+function downloadWinnersAsExcel() {
+    if (previousWinners.length === 0) {
+        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
+        return;
+    }
+    const lastDrawName = previousWinners[previousWinners.length - 1]['Draw Name'];
+    const winners = previousWinners.filter(w => w['Draw Name'] === lastDrawName);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(winners);
+    XLSX.utils.book_append_sheet(wb, ws, "Winners");
+    const filename = sanitizeFilename(drawName.value.trim() || `추첨_${currentRound - 1}`) + '.xlsx';
+    XLSX.writeFile(wb, filename);
+}
+
+// 전체 당첨자 CSV 다운로드
+function downloadAllWinnersAsCSV() {
+    if (previousWinners.length === 0) {
+        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
+        return;
+    }
+    const csvContent = [headers.join(',')].concat(
+        previousWinners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
+    ).join('\n');
+    const filename = sanitizeFilename('당첨자_목록') + '.csv';
+    downloadFile(filename, 'text/csv', csvContent);
+}
+
+// 전체 당첨자 Excel 다운로드
+function downloadAllWinnersAsExcel() {
+    if (previousWinners.length === 0) {
+        drawMessage.innerHTML = '<p class="error">다운로드할 당첨자가 없습니다.</p>';
+        return;
+    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(previousWinners);
+    XLSX.utils.book_append_sheet(wb, ws, "All Winners");
+    const filename = sanitizeFilename('전체 당첨자 목록') + '.xlsx';
+    XLSX.writeFile(wb, filename);
+}
+
+// 초기화 함수
+function resetAll() {
+    if (confirm('정말로 초기화하시겠습니까? 모든 데이터가 삭제됩니다.')) {
+        data = [];
+        previousWinners = [];
+        currentRound = 1;
+        headers = [];
+        tableHeader.innerHTML = '';
+        tableBody.innerHTML = '';
+        winnersTableHeader.innerHTML = '';
+        winnersBody.innerHTML = '';
+        previousWinnersContainer.innerHTML = '';
+        dataTableSection.classList.add('hidden');
+        drawControlsSection.classList.add('hidden');
+        winnersSection.classList.add('hidden');
+        allWinnersSection.classList.add('hidden');
+        previousWinnersSection.classList.add('hidden');
+        fileMessage.innerHTML = '';
+        googleSheetMessage.innerHTML = '';
+        directInputMessage.innerHTML = '';
+        dataMessage.innerHTML = '';
+        drawMessage.innerHTML = '';
+        updateExcludePreviousVisibility(); // '기존 당첨자 제외' 옵션 숨김
+    }
+}
+
+// '기존 당첨자 제외' 옵션의 표시 여부 업데이트 함수
+function updateExcludePreviousVisibility() {
+    if (previousWinners.length > 0) {
+        excludePreviousContainer.classList.remove('hidden');
+    } else {
+        excludePreviousContainer.classList.add('hidden');
+        excludePrevious.checked = false; // 체크 해제
+    }
+}
+
+// 초기화 실행
+initialize();
