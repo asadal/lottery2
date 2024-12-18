@@ -7,19 +7,16 @@ body {
     padding: 20px;
 }
 
-/* 타이틀(제목) 폰트는 Noto Sans KR 사용 */
 h1, h2, h3 {
-    font-family: 'Gmarket Sans', 'Noto Sans KR', sans-serif;
+    font-family: 'Gmarket Sans', 'IBM Plex Sans KR', sans-serif;
     color: #222222;
 }
 
-/* 컨테이너 스타일 */
 .container {
     max-width: 800px;
     margin: auto;
 }
 
-/* 섹션 기본 스타일 */
 .section {
     margin-bottom: 30px;
     padding: 20px;
@@ -46,20 +43,19 @@ input[type="file"] {
     margin-bottom: 16px;
 }
 
-/* label 볼드 해제 */
 label {
-    font-weight: normal; 
+    font-weight: normal; /* 볼드 해제 */
     display: block;
     margin-bottom: 4px;
 }
 
-/* 버튼 기본 스타일 */
+/* 전체 버튼 기본 스타일 (파란색) */
 button {
-    padding: 5px 10px; /* 패딩: 상하5px, 좌우10px */
-    background-color: transparent;
-    color: #1976d2; 
-    border: 2px solid #1976d2; 
-    border-radius: 12px; 
+    padding: 5px 10px; /* 5px 상하, 10px 좌우 패딩 */
+    background-color: transparent; /* 배경색 제거 */
+    color: #1976d2; /* 기본 텍스트 색상 파란색 */
+    border: 2px solid #1976d2; /* 기본 외곽선 파란색 */
+    border-radius: 12px; /* 모서리 라운드 */
     cursor: pointer;
     margin-right: 10px;
     font-size: 14px;
@@ -67,22 +63,21 @@ button {
 }
 
 button:hover {
-    background-color: rgba(25, 118, 210, 0.1);
-    color: #115293;
+    background-color: rgba(25, 118, 210, 0.1); /* 호버 시 약간의 파란색 배경 */
+    color: #115293; /* 호버 시 텍스트 색상 진한 파란색 */
 }
 
-/* "전체 당첨자 목록 다운로드" 버튼은 초록색으로 표시 */
+/* 전체 당첨자 목록 다운로드 버튼을 위한 클래스 (초록색) */
 .download-all-button {
-    color: #388e3c;
-    border-color: #388e3c;
+    color: #388e3c; /* 텍스트 색상 초록색 */
+    border-color: #388e3c; /* 외곽선 초록색 */
 }
 
 .download-all-button:hover {
-    background-color: rgba(56, 142, 60, 0.1);
-    color: #2e7d32;
+    background-color: rgba(56, 142, 60, 0.1); /* 호버 시 약간의 초록색 배경 */
+    color: #2e7d32; /* 호버 시 텍스트 색상 진한 초록색 */
 }
 
-/* 테이블 스타일 */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -99,7 +94,6 @@ th {
     background-color: #f0f0f0;
 }
 
-/* 체크박스 컨테이너 스타일 */
 .checkbox-container {
     display: flex;
     align-items: center;
@@ -114,7 +108,6 @@ th {
     display: none;
 }
 
-/* 메시지 스타일 */
 .success {
     color: #388e3c;
     margin-top: 10px;
@@ -130,7 +123,6 @@ th {
     margin-top: 10px;
 }
 
-/* 구분선 스타일 */
 hr {
     border: none;
     border-top: 1px solid #dddddd;
@@ -142,25 +134,4 @@ hr {
     display: inline-flex;
     align-items: center;
     margin-right: 20px;
-}
-
-/* 참가자 목록 섹션(#dataTableSection) 스크롤 적용 */
-#dataTableSection {
-    max-height: 500px; /* 높이 500px 고정 */
-    overflow: auto;    /* 스크롤 활성화 */
-    box-sizing: border-box;
-}
-
-/* 당첨자 목록 섹션(#winnersSection) 스크롤 적용 */
-#winnersSection {
-    max-height: 500px;
-    overflow: auto;
-    box-sizing: border-box;
-}
-
-/* 추첨별 당첨자 목록 섹션(#previousWinnersSection) 스크롤 적용 */
-#previousWinnersSection {
-    max-height: 500px;
-    overflow: auto;
-    box-sizing: border-box;
 }
