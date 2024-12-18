@@ -359,20 +359,22 @@ function updatePreviousWinnersDisplay() {
         table.appendChild(tbody);
         section.appendChild(table);
 
-        // 다운로드 버튼
-        const sanitizedDrawName = sanitizeFilename(draw);
-        // CSV 다운로드
+        // 다운로드 버튼 감싸는 div 생성
+        const buttonGroup = document.createElement('div');
+        buttonGroup.classList.add('download-button-group'); // 새로운 클래스 적용
+
+        // CSV 다운로드 버튼
         const csvButton = document.createElement('button');
         csvButton.textContent = `'${draw}' 당첨자 다운로드(CSV)`;
         csvButton.addEventListener('click', () => {
             const csvContent = [headers.join(',')].concat(
                 winners.map(w => headers.map(header => `"${w[header] || ''}"`).join(','))
             ).join('\n');
-            downloadFile(`${sanitizedDrawName}.csv`, 'text/csv', csvContent);
+            downloadFile(`${sanitizeFilename(draw)}.csv`, 'text/csv', csvContent);
         });
-        section.appendChild(csvButton);
+        buttonGroup.appendChild(csvButton);
 
-        // Excel 다운로드
+        // Excel 다운로드 버튼
         const excelButton = document.createElement('button');
         excelButton.textContent = `'${draw}' 당첨자 다운로드(Excel)`;
         excelButton.style.marginLeft = '10px';
@@ -380,14 +382,14 @@ function updatePreviousWinnersDisplay() {
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(winners);
             XLSX.utils.book_append_sheet(wb, ws, "Winners");
-            XLSX.writeFile(wb, `${sanitizedDrawName}.xlsx`);
+            XLSX.writeFile(wb, `${sanitizeFilename(draw)}.xlsx`);
         });
-        section.appendChild(excelButton);
+        buttonGroup.appendChild(excelButton);
 
+        section.appendChild(buttonGroup);
         previousWinnersContainer.appendChild(section);
     }
-
-    // '기존 당첨자 제외' 옵션 업데이트
+    // 기존 당첨자 제외 옵션 업데이트
     updateExcludePreviousVisibility();
 }
 
